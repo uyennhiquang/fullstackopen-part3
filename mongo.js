@@ -4,7 +4,7 @@ if (process.argv.length < 3) {
   console.log("give pw as args");
   process.exit(1);
 } else if (process.argv.length > 5) {
-  console.log("too long :(");
+  console.log("too long :\(");
   process.exit(1);
 }
 

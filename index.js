@@ -1,15 +1,16 @@
+require("dotenv").config();
 const express = require("express");
 const morgan = require("morgan");
 const cors = require("cors");
-
+const Person = require("./models/persons");
 
 const app = express();
 
 app.use(express.json());
-app.use(cors())
+app.use(cors());
 app.use(morgan("tiny"));
 
-app.use(express.static('dist'))
+app.use(express.static("dist"));
 
 let persons = [
   {
@@ -35,7 +36,10 @@ let persons = [
 ];
 
 app.get("/api/persons", (request, response) => {
-  response.json(persons);
+  // response.json(persons);
+  Person.find({}).then((persons) => {
+    response.json(persons);
+  });
 });
 
 app.get("/info", (request, response) => {
@@ -47,12 +51,15 @@ app.get("/info", (request, response) => {
 });
 
 app.get("/api/persons/:id", (request, response) => {
-  const id = Number(request.params.id);
-  const requestedPerson = persons.find((person) => person.id === id);
-
-  if (requestedPerson) {
-    response.json(requestedPerson);
-  } else response.status(404).end();
+  // const id = Number(request.params.id);
+  // const requestedPerson = persons.find((person) => person.id === id);
+  //
+  // if (requestedPerson) {
+  // response.json(requestedPerson);
+  // } else response.status(404).end();
+  Person.findById(request.params.id).then((person) => {
+    response.json(person);
+  });
 });
 
 app.delete("/api/persons/:id", (request, response) => {
@@ -65,26 +72,24 @@ app.delete("/api/persons/:id", (request, response) => {
 
 app.post("/api/persons", (request, response) => {
   const body = request.body;
-  if (!body.name || !body.number)
-    response.status(400).json({
-      error: "incomplete fields",
-    });
-  else if (persons.find((person) => person.name === body.name) !== undefined) {
-    response.status(400).json({
-      error: "name already in the system",
-    });
-  }
+  // if (!body.name || !body.number)
+  // response.status(400).json({
+  // error: "incomplete fields",
+  // });
+  // else if (persons.find((person) => person.name === body.name) !== undefined) {
+  // response.status(400).json({
+  // error: "name already in the system",
+  // });
+  // }
 
-  const newPerson = {
-    id: persons.length + 1,
+  const newPerson = new Person({
     name: body.name,
     number: body.number,
-  };
+  });
 
-  persons = persons.concat(newPerson);
-  console.log(persons);
-
-  response.json(newPerson);
+  newPerson.save().then((newPerson) => {
+    response.json(newPerson);
+  });
 });
 
 const PORT = process.env.PORT || 3001;
